@@ -1,0 +1,17 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0a0f1c;
+  color: #00ff41;
+  font-family: 'Courier New', monospace;
+  overflow-x: auto;
+}
+
+.App {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0f1c 0%, #1a1a2e 100%);
+}

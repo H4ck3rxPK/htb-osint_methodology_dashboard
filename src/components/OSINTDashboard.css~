@@ -1,0 +1,288 @@
+.osint-dashboard {
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 主標題 */
+.main-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #9fef00;
+  border: 2px solid #9fef00;
+  padding: 16px 32px;
+  border-radius: 8px;
+  background: rgba(159, 239, 0, 0.1);
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+/* Core Elements 區域 */
+.core-elements-section {
+  width: 100%;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.elements-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.core-element-container {
+  position: relative;
+  min-width: 200px;
+}
+
+.core-element {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border: 2px solid #9fef00;
+  border-radius: 8px;
+  background: rgba(159, 239, 0, 0.15);
+  color: #9fef00;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 50px;
+}
+
+.core-element:hover {
+  background: rgba(159, 239, 0, 0.25);
+  transform: translateY(-2px);
+}
+
+.element-name {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+}
+
+.expand-icon {
+  margin-left: 10px;
+  color: #9fef00;
+}
+
+/* 展開的子項目 - 單行橫列排列 */
+.expanded-children {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  min-width: 800px;
+  overflow-x: auto;
+}
+
+/* 連接線 - 從父元素到子元素 */
+.expanded-children::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 20px;
+  background: #9fef00;
+}
+
+.child-item {
+  padding: 8px 16px;
+  border: 1px solid #9fef00;
+  border-radius: 4px;
+  background: rgba(159, 239, 0, 0.1);
+  color: #9fef00;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* 選中的子項目 */
+.child-item.selected {
+  border: 2px solid #ffa500;
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+  box-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+}
+
+/* 每個子項目的連接線 */
+.child-item::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 10px;
+  background: #9fef00;
+}
+
+/* 子項目之間的橫線 */
+.expanded-children::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #9fef00;
+}
+
+.child-item:hover {
+  background: rgba(159, 239, 0, 0.2);
+}
+
+.child-item.selected:hover {
+  background: rgba(255, 165, 0, 0.3);
+}
+
+/* 連接區域 (中間留白) */
+.connection-area {
+  height: 150px;
+  width: 100%;
+  position: relative;
+}
+
+.connection-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.connection-line {
+  stroke: #ffa500;
+  stroke-width: 2;
+  opacity: 0.8;
+}
+
+/* Information Resources 區域 */
+.resources-section {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.resources-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.information-resource {
+  padding: 12px 20px;
+  border: 2px solid #ff4444;
+  border-radius: 8px;
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  text-align: center;
+}
+
+.information-resource:hover {
+  background: rgba(255, 68, 68, 0.2);
+  transform: translateY(-2px);
+}
+
+/* 已連接的資源 */
+.information-resource.connected {
+  border-color: #ffa500;
+  color: #ffa500;
+  background: rgba(255, 165, 0, 0.1);
+}
+
+.information-resource.connected:hover {
+  background: rgba(255, 165, 0, 0.2);
+}
+
+/* 選擇狀態提示 */
+.selection-hint {
+  margin: 10px 0;
+  padding: 10px 20px;
+  background: rgba(255, 165, 0, 0.1);
+  border: 1px solid #ffa500;
+  border-radius: 4px;
+  color: #ffa500;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+}
+
+.selected-item {
+  font-weight: bold;
+  color: #ffa500;
+}
+
+/* Export 按鈕 */
+.export-section {
+  margin-top: 20px;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 2px solid #9fef00;
+  border-radius: 8px;
+  background: rgba(159, 239, 0, 0.1);
+  color: #9fef00;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.export-btn:hover {
+  background: rgba(159, 239, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .elements-row, .resources-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .core-element-container {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .expanded-children {
+    min-width: 300px;
+  }
+}
+
+/* SVG 連接線樣式 */
+.connection-svg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.connection-svg line {
+  stroke: #ffa500;
+  stroke-width: 3;
+  opacity: 0.8;
+}

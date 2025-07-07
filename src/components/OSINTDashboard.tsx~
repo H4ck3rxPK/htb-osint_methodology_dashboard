@@ -1,0 +1,245 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Plus, ChevronDown, ChevronRight, Download } from 'lucide-react';
+import './OSINTDashboard.css';
+
+interface OSINTNode {
+  id: string;
+  name: string;
+  children: string[];
+  isExpanded: boolean;
+}
+
+interface Connection {
+  from: string;
+  to: string;
+  fromRect: { x: number; y: number; width: number; height: number };
+  toRect: { x: number; y: number; width: number; height: number };
+}
+
+const OSINTDashboard: React.FC = () => {
+  const dashboardRef = useRef<HTMLDivElement>(null);
+  
+  // Core Elements (上方綠色)
+  const [coreElements] = useState<OSINTNode[]>([
+    {
+      id: 'company-info',
+      name: 'Company Information',
+      isExpanded: false,
+      children: ['Organization', 'Locations', 'Staff', 'Contact Information', 'Business Records', 'Services', 'Social Networks']
+    },
+    {
+      id: 'infrastructure',
+      name: 'Infrastructure', 
+      isExpanded: false,
+      children: ['Domain Information', 'Public Domain Records', 'Domain Structure', 'Cloud Storage', 'Email Addresses', 'Third-Parties', 'Compounded Social Networks', 'Technologies in Use']
+    },
+    {
+      id: 'leaks',
+      name: 'Leaks',
+      isExpanded: false,
+      children: ['Archives', 'Internal Leaks', 'Breaches']
+    }
+  ]);
+
+  // Information Resources (下方紅色，固定)
+  const informationResources = [
+    'Home Page', 'Files', 'Social Networks', 'Search Engines', 
+    'Development Platforms', 'Forums', 'Leak Resources'
+  ];
+
+  const [expandedElements, setExpandedElements] = useState<string[]>([]);
+  const [selectedChild, setSelectedChild] = useState<string | null>(null);
+  const [connections, setConnections] = useState<Connection[]>([]);
+
+  const getElementRect = (element: Element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height
+    };
+  };
+
+  const toggleExpansion = (elementId: string) => {
+    setExpandedElements(prev => 
+      prev.includes(elementId) 
+        ? [] // 如果已展開，就關閉
+        : [elementId] // 如果沒展開，就只展開這一個（關閉其他）
+    );
+    // 清除選擇狀態和所有連接
+    setSelectedChild(null);
+    setConnections([]);
+  };
+
+  const handleChildClick = (childName: string) => {
+    // 如果點擊的是已選中的子項目，不要取消選擇
+    if (selectedChild !== childName) {
+      // 切換到新的子項目時，清除之前的連接
+      setConnections([]);
+      setSelectedChild(childName);
+    }
+  };
+
+  const handleResourceClick = (resourceName: string) => {
+    if (selectedChild) {
+      // 獲取元素位置
+      const fromElement = document.querySelector(`[data-child="${selectedChild}"]`);
+      const toElement = document.querySelector(`[data-resource="${resourceName}"]`);
+      
+      if (fromElement && toElement) {
+        const fromRect = getElementRect(fromElement);
+        const toRect = getElementRect(toElement);
+        
+        const newConnection: Connection = {
+          from: selectedChild,
+          to: resourceName,
+          fromRect,
+          toRect
+        };
+        
+        // 檢查是否已存在相同連接
+        const connectionExists = connections.some(
+          conn => conn.from === newConnection.from && conn.to === newConnection.to
+        );
+        
+        if (!connectionExists) {
+          setConnections(prev => [...prev, newConnection]);
+        }
+      }
+    }
+  };
+
+  // 更新連接線位置（當窗口大小改變時）
+  useEffect(() => {
+    const updateConnections = () => {
+      setConnections(prev => prev.map(conn => {
+        const fromElement = document.querySelector(`[data-child="${conn.from}"]`);
+        const toElement = document.querySelector(`[data-resource="${conn.to}"]`);
+        
+        if (fromElement && toElement) {
+          return {
+            ...conn,
+            fromRect: getElementRect(fromElement),
+            toRect: getElementRect(toElement)
+          };
+        }
+        return conn;
+      }));
+    };
+
+    window.addEventListener('resize', updateConnections);
+    return () => window.removeEventListener('resize', updateConnections);
+  }, []);
+
+  return (
+    <div className="osint-dashboard" ref={dashboardRef}>
+      {/* 主標題 */}
+      <div className="main-title">
+        OSINT: Corporate Recon
+      </div>
+
+      {/* Core Elements (上方) */}
+      <div className="core-elements-section">
+        <div className="elements-row">
+          {coreElements.map(element => (
+            <div key={element.id} className="core-element-container">
+              <div 
+                className="core-element" 
+                onClick={() => toggleExpansion(element.id)}
+              >
+                <span className="element-name">{element.name}</span>
+                <span className="expand-icon">
+                  {expandedElements.includes(element.id) ? 
+                    <ChevronDown size={16} /> : <ChevronRight size={16} />
+                  }
+                </span>
+              </div>
+              
+              {/* 展開的子項目 */}
+              {expandedElements.includes(element.id) && (
+                <div className="expanded-children">
+                  {element.children.map((child, index) => (
+                    <div 
+                      key={index} 
+                      className={`child-item ${selectedChild === child ? 'selected' : ''}`}
+                      onClick={() => handleChildClick(child)}
+                      data-child={child}
+                    >
+                      {child}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 中間留白區域 */}
+      <div className="connection-area"></div>
+
+      {/* Information Resources (下方) */}
+      <div className="resources-section">
+        <div className="resources-row">
+          {informationResources.map((resource, index) => (
+            <div 
+              key={index} 
+              className={`information-resource ${
+                connections.some(conn => conn.to === resource) ? 'connected' : ''
+              }`}
+              onClick={() => handleResourceClick(resource)}
+              data-resource={resource}
+            >
+              {resource}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* SVG 連接線 */}
+      <svg className="connection-svg" width="100%" height="100%">
+        {connections.map((connection, index) => {
+          const fromX = connection.fromRect.x + connection.fromRect.width / 2;
+          const fromY = connection.fromRect.y + connection.fromRect.height;
+          const toX = connection.toRect.x + connection.toRect.width / 2;
+          const toY = connection.toRect.y;
+          
+	  //console.log('Drawing line:', { fromX, fromY, toX, toY });
+
+          return (
+            <line
+              key={index}
+              x1={fromX}
+              y1={fromY}
+              x2={toX}
+              y2={toY}
+              stroke="#ffa500"
+              strokeWidth="3"
+              opacity="0.8"
+            />
+          );
+        })}
+	{/* 測試線條 */}
+	{/*<line x1="100" y1="100" x2="200" y2="200" stroke="#ffa500" strokeWidth="3" />*/}
+      </svg>
+
+      {/* 選擇狀態提示 */}
+      {selectedChild && (
+        <div className="selection-hint">
+          已選擇: <span className="selected-item">{selectedChild}</span>
+        </div>
+      )}
+
+      {/* Export 按鈕 */}
+      <div className="export-section">
+        <button className="export-btn" disabled={connections.length === 0}>
+          <Download size={16} />
+          Export Methodology ({connections.length} connections)
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default OSINTDashboard;
