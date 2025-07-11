@@ -282,7 +282,6 @@
 }
 
 .connection-svg line {
-  stroke: #ffa500;
   stroke-width: 3;
   opacity: 0.8;
 }

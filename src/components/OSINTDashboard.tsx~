@@ -136,7 +136,7 @@ const OSINTDashboard: React.FC = () => {
     <div className="osint-dashboard" ref={dashboardRef}>
       {/* 主標題 */}
       <div className="main-title">
-        OSINT: Corporate Recon
+        Core Elements
       </div>
 
       {/* Core Elements (上方) */}
@@ -147,6 +147,7 @@ const OSINTDashboard: React.FC = () => {
               <div 
                 className="core-element" 
                 onClick={() => toggleExpansion(element.id)}
+		data-element-id={element.id}
               >
                 <span className="element-name">{element.name}</span>
                 <span className="expand-icon">
@@ -222,7 +223,81 @@ const OSINTDashboard: React.FC = () => {
         })}
 	{/* 測試線條 */}
 	{/*<line x1="100" y1="100" x2="200" y2="200" stroke="#ffa500" strokeWidth="3" />*/}
-      </svg>
+{/* 綠色線條：Core Elements 到展開的父節點 */}
+{expandedElements.length > 0 && (() => {
+  const coreElementsTitle = document.querySelector('.main-title');
+  const expandedParent = document.querySelector(`[data-element-id="${expandedElements[0]}"]`);
+
+  if (coreElementsTitle && expandedParent) {
+    const titleRect = getElementRect(coreElementsTitle);
+    const parentRect = getElementRect(expandedParent);
+
+    const titleX = titleRect.x + titleRect.width / 2;
+    const titleY = titleRect.y + titleRect.height;
+    const parentX = parentRect.x + parentRect.width / 2;
+    const parentY = parentRect.y;
+
+    // 檢查是否是 Infrastructure（強制垂直對齊）
+    const isInfrastructure = expandedElements[0] === 'infrastructure';
+
+    if (isInfrastructure) {
+      // 強制使用標題的 X 座標，確保完全垂直
+      return (
+        <line
+          key="core-to-infrastructure"
+          x1={titleX}
+          y1={titleY}
+          x2={titleX}
+          y2={parentY}
+          stroke="#9fef00"
+          strokeWidth="3"
+          opacity="0.8"
+        />
+      );
+    } else {
+      // 直角彎曲線條（適用於左右兩側的父節點）
+      const midY = titleY + (parentY - titleY) / 2;
+
+      return (
+        <g key="core-to-parent-angled">
+          {/* 垂直線：從標題向下 */}
+          <line
+            x1={titleX}
+            y1={titleY}
+            x2={titleX}
+            y2={midY}
+            stroke="#9fef00"
+            strokeWidth="3"
+            opacity="0.8"
+          />
+          {/* 水平線：從標題位置到父節點位置 */}
+          <line
+            x1={titleX}
+            y1={midY}
+            x2={parentX}
+            y2={midY}
+            stroke="#9fef00"
+            strokeWidth="3"
+            opacity="0.8"
+          />
+          {/* 垂直線：到父節點 */}
+          <line
+            x1={parentX}
+            y1={midY}
+            x2={parentX}
+            y2={parentY}
+            stroke="#9fef00"
+            strokeWidth="3"
+            opacity="0.8"
+          />
+        </g>
+      );
+    }
+  }
+  return null;
+})()}
+	</svg>
+
 
       {/* 選擇狀態提示 */}
       {selectedChild && (

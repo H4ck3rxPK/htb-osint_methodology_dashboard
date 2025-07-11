@@ -109,6 +109,65 @@ const OSINTDashboard: React.FC = () => {
       }
     }
   };
+  
+  const handleExport = async () => {
+  if (connections.length === 0) return;
+
+  // 使用組合內容產生固定的 exportId
+  const sortedResources = connections.map(conn => conn.to).sort().join('-');
+  const combinationKey = `${expandedElements[0]}-${selectedChild}-${sortedResources}`;
+  const exportId = btoa(combinationKey).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20); // 限制長度
+
+  console.log('Generated exportId:', exportId, 'for combination:', combinationKey);
+
+  // 準備導出數據
+  const exportData = {
+    exportId: exportId,
+    timestamp: new Date(),
+    coreElement: expandedElements[0],
+    selectedChild: selectedChild,
+    connections: connections,
+    connectedResources: connections.map(conn => conn.to)
+  };
+
+  try {
+    // 檢查是否已存在相同組合
+    const checkResponse = await fetch(`http://192.168.3.121:5000/api/exports/${exportId}`);
+    
+    if (checkResponse.ok) {
+      // 如果已存在，直接使用現有數據
+      const existingData = await checkResponse.json();
+      console.log('找到現有數據:', existingData);
+      localStorage.setItem('osint-export-data', JSON.stringify(existingData));
+    } else {
+      // 如果不存在，創建新的
+      const response = await fetch('http://192.168.3.121:5000/api/exports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(exportData)
+      });
+
+      if (response.ok) {
+        const savedData = await response.json();
+        console.log('創建新數據:', savedData);
+        localStorage.setItem('osint-export-data', JSON.stringify(savedData));
+      } else {
+        console.error('保存失敗:', response.statusText);
+        alert('保存數據失敗，請檢查後端服務是否運行');
+        return;
+      }
+    }
+
+    // 開啟新分頁
+    window.open('/tasks', '_blank');
+    
+  } catch (error) {
+    console.error('連接後端失敗:', error);
+    alert('無法連接到後端服務');
+  }
+};
 
   // 更新連接線位置（當窗口大小改變時）
   useEffect(() => {
@@ -308,10 +367,14 @@ const OSINTDashboard: React.FC = () => {
 
       {/* Export 按鈕 */}
       <div className="export-section">
-        <button className="export-btn" disabled={connections.length === 0}>
-          <Download size={16} />
-          Export Methodology ({connections.length} connections)
-        </button>
+        <button
+    	  className="export-btn"
+    	  disabled={connections.length === 0}
+    	  onClick={handleExport}
+  	>
+    	  <Download size={16} />
+    	  Export Methodology ({connections.length} connections)
+  	</button>
       </div>
     </div>
   );
